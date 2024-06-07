@@ -81,7 +81,7 @@ spec:
         - $formkit: checkbox
           name: iemo_upyun
           label: 又拍云联盟
-          value: false          
+          value: false
 
     - group: sidebar
       label: 侧栏
@@ -89,14 +89,14 @@ spec:
         - $formkit: attachment
           name: iemo_avatar_author
           label: 个人头像
-          help: 个人资料的头像 
+          help: 个人资料的头像
           value: https://cravatar.cn
           accepts:
             - "image/*"
         - $formkit: attachment
           name: iemo_cover_author
           label: 个人背景
-          help: 显示在侧边栏 
+          help: 显示在侧边栏
           value: /themes/theme-iemo/assets/images/cover-author.jpg
           accepts:
             - "image/*"
@@ -172,5 +172,29 @@ spec:
           value: /themes/theme-iemo/assets/images/random/cover-post-1.jpg
           accepts:
             - "image/*"
-        
+    - group: link
+      label: 友人帐
+      help: 需自行安装官方链接插件、困困鱼的朋友圈插件
+      formSchema:
+        - $formkit: singlePageSelect
+          name: iemo_link_add
+          label: 申请页面
+          value: ""
+          help: 需要自定义页面中选择【提交友情链接页面模版】，直接创建后填入页面地址即可（默认选择插件页面，会少一个博客地址字段）
+        - $formkit: code
+          name: iemo_link_application_tip
+          label: 申请页提示语
+          value: '<div><strong>欢迎在这里提交您的博客，请使用下方表单提交，一般在</strong><strong style="color: #cb2e58;">24</strong><strong>小时之内会得到审核！</strong></div>'
+          help: 申请页面的提示语
+        - $formkit: code
+          name: iemo_link_review_tip
+          label: 审核页提示语
+          value: <strong>这里会列出所有已提交的博客与审核结果，如果您的博客很遗憾被驳回了，请按照错误提示修改后重新提交！</strong>
+          help: 审核结果页面的提示语
+        #        - $formkit: text
+        #          name: iemo_link_add_friend
+        #          label: 链接插件添加地址
+        #          value: http://localhost:8090/apis/core.halo.run/v1alpha1/links
+        #          help: 链接插件添加地址，请使用反向代理避免暴露真实地址
+
     

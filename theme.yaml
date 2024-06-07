@@ -13,6 +13,10 @@ spec:
         description: 支持可预设文本的友链
         screenshot:
         file: page_links.html
+      - name: 友情链接提交页面模版
+        description: 包括申请
+        screenshot:
+        file: page_links_add.html
   description: 简约感设计Halo主题
   logo: "/themes/theme-iemo/assets/images/logo.png"
   homepage: "https://github.com/chengzhongxue/halo-theme-iemo"

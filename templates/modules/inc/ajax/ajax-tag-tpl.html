@@ -49,6 +49,8 @@
                 left: position.left + scrollLeft,
             });
 
+            console.log(url)
+
             // request data
             $.ajax({
                 type: 'get',
@@ -114,7 +116,7 @@
     })
 
 
-    // ajax loading post 
+    // ajax loading post
     const bind_tag_next = () => {
         jQuery(document).ready(function ($) {
             $('#pagination-post a').click(function () {

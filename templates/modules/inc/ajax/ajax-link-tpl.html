@@ -1,0 +1,422 @@
+<script th:inline="javascript" th:with="link_add_page = ${theme.config.link.iemo_link_add}"
+        xmlns:th="http://www.w3.org/1999/xhtml">
+    $('<div class="slider"></div>').appendTo($('.link-bar ul'));
+
+    let linkA = $('.link .link-bar ul li a');
+    let firstLinkA = $('.link .link-bar ul li:first a');
+    let url = firstLinkA.attr('href');
+    let title = firstLinkA.text();
+
+    let linkUl = $('.link .link-bar ul');
+    let solider = $('.link .link-bar ul .slider');
+
+    $(document).ready(() => {
+        firstLinkA.addClass('active');
+        solider.width(firstLinkA.outerWidth());
+        let position = firstLinkA.position();
+        let scrollLeft = linkUl.scrollLeft();
+        solider.css({
+            left: position.left + scrollLeft,
+        });
+
+        $.ajax({
+            type: 'get',
+            url: url,
+            success: function (data) {
+                posts = $(data).find('.link-box > *');
+                $('.link-box').html(posts);
+                $('title').html(title + ' &#8211 ' + CONFIG.name);
+                window.history.pushState('', '', url);
+                bind_link_next();
+            }
+        });
+        return false;
+    })
+
+
+    // click event
+    $(document).ready(() => {
+        linkA.on('click', function () {
+            let url = $(this).attr('href');
+            let title = $(this).text();
+            linkA.removeClass('active');
+            $(this).addClass('active');
+            this.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
+            solider.width($(this).outerWidth());
+            let position = $(this).position();
+            let scrollLeft = linkUl.scrollLeft();
+            solider.css({
+                left: position.left + scrollLeft,
+            });
+
+            // request data
+            $.ajax({
+                type: 'get',
+                url: url,
+                success: function (data) {
+                    var link_add_page = [[${link_add_page}]]; // 获取页码
+                    link_add = [[${link_add_page eq ''?'blog-requests/add': singlePageFinder.getByName(link_add_page).status.permalink}]] // 获取链接
+                    if (url === "/friends") {
+                        // 修改标题
+                        $('.link main .content article>h2').html('朋友圈 <span>Moments.</span>');
+                        // 获取文章内容
+                        posts = $(data).find('article.post-entry');
+
+                        // 替换header标签为div
+                        posts.find('header').each(function () {
+                            var headerContent = $(this).html();
+                            var headerClass = $(this).attr('class');
+                            $(this).replaceWith('<div class="' + headerClass + '">' + headerContent + '</div>');
+                        });
+
+                        // 替换footer标签为div
+                        posts.find('footer').each(function () {
+                            var footerContent = $(this).html();
+                            var footerClass = $(this).attr('class');
+                            $(this).replaceWith('<div class="' + footerClass + '">' + footerContent + '</div>');
+                        });
+
+                    } else if (url === link_add) {
+                        // 修改标题
+                        $('.link main .content article>h2').html('申请 <span>Application.</span>');
+
+                        // 创建一个临时的容器元素
+                        var tempContainer = $('<div></div>');
+
+                        // 将 HTML 字符串设置为容器的内容
+                        tempContainer.html(data);
+                        // 替换article标签为div
+                        tempContainer.find('article').each(function () {
+                            var articleContent = $(this).html();
+                            var articleClass = $(this).attr('class');
+                            $(this).replaceWith('<div class="' + articleClass + '">' + articleContent + '</div>');
+                        });
+                        tempContainer.find('.entry-content').html([[${theme.config.link.iemo_link_application_tip}]]);
+                        tempContainer.find('header').remove()
+                        // 在容器中查找 'main' 元素
+                        posts = tempContainer.find('main');
+                        // 输出结果
+                        console.log(posts);
+                    } else if (url.startsWith("/blog-requests")) {
+                        pushResultBlock(data)
+                    } else {
+                        // 修改标题
+                        $('.link main .content article>h2').html('友人帐 <span>Friends.</span>');
+                        posts = $(data).find('.link-box > *');
+                    }
+                    $('.link-box').html(posts);
+                    if (url.startsWith("/blog-requests")) {
+                        preNextClicted()
+                    }
+                    $('title').html(title + ' &#8211 ' + CONFIG.name);
+                    window.history.pushState('', '', 'links');
+                    bind_link_next();
+
+                    $('article').off("scroll");
+                    $('article').on("scroll", pc_scroll());
+
+                    $(document).off("scroll");
+                    $(document).on("scroll", mobile_scroll());
+                }
+            });
+            return false;
+        });
+    })
+
+    // popstate event
+    $(document).ready(() => {
+        window.onpopstate = () => {
+            let url = location.href;
+            let title = '';
+            linkA.each(function () {
+                if ($(this).attr('href') == url) {
+                    title = $(this).text();
+                    linkA.removeClass('active');
+                    $(this).addClass('active');
+                    this.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
+                    solider.width($(this).outerWidth());
+                    let position = $(this).position();
+                    let scrollLeft = linkUl.scrollLeft();
+                    solider.css({
+                        left: position.left + scrollLeft,
+                    });
+                }
+            })
+
+            // request data
+            $.ajax({
+                type: 'get',
+                url: url,
+                success: function (data) {
+                    posts = $(data).find('.link-box > *');
+                    $('.link-box').html(posts);
+                    $('title').html(title + ' &#8211 ' + CONFIG.name);
+                    bind_link_next();
+
+                    $('article').off("scroll");
+                    $('article').on("scroll", pc_scroll());
+
+                    $(document).off("scroll");
+                    $(document).on("scroll", mobile_scroll());
+                }
+            });
+            return false;
+        }
+    })
+
+
+    // ajax loading post
+    const bind_link_next = () => {
+        jQuery(document).ready(function ($) {
+            $('#pagination-post a').click(function () {
+                $this = $(this);
+                $this.addClass('loading').html('<i class="iconfont icon-loader"></i> 加载中...');
+                var href = $this.attr("href");
+                console.log(href)
+                if (href != undefined) {
+                    $.ajax({
+                        url: href,
+                        type: "get",
+                        error: function (request) {
+                            // console.log('error');
+                        },
+                        success: function (data) {
+                            $this.removeClass('loading').html('<i class="iconfont icon-activity"></i> 加载更多文章');
+                            var $res = $(data).find("article .link-box ul li");
+                            $('article .link-box ul').append($res);
+                            var newhref = $(data).find("#pagination-post a").attr("href");
+                            if (newhref != undefined) {
+                                $("#pagination-post a").attr("href", newhref);
+                            } else {
+                                $("#pagination-post a").removeAttr("href");
+                                $("#pagination-post a").html('<i class="iconfont icon-anchor"></i> 好像就这么多');
+                                $("#pagination-post a").parent().addClass('no-more-post');
+                                $("#pagination-post a").off("click");
+                                $('article').off("scroll");
+                                $(document).off("scroll");
+                            }
+                        }
+                    });
+                }
+                return false;
+            });
+        });
+    }
+
+    bind_link_next();
+
+    // browser Back event
+    $(function () {
+        pushHistory();
+        window.addEventListener("popstate", function () {
+            let linkUrl = $('header .menu ul .link a').attr('href');
+            if (location.href == linkUrl) {
+                history.go(-2);
+            }
+        }, false);
+
+        function pushHistory() {
+            var state = {
+                title: 'title',
+                url: ''
+            };
+            window.history.pushState(state, 'title', '');
+        }
+    });
+    const pushResultBlock = (data) => {
+        // 修改标题
+        $('.link main .content article>h2').html('审核 <span>Review.</span>');
+
+        // 创建一个临时的容器元素
+        var tempContainer = $('<div></div>');
+        // 将 HTML 字符串设置为容器的内容
+        tempContainer.html(data);
+        // 替换article、footer标签为div
+        tempContainer.find('article').each(function () {
+            var articleContent = $(this).html();
+            var articleClass = $(this).attr('class');
+            $(this).replaceWith('<div class="' + articleClass + '">' + articleContent + '</div>');
+        });
+        tempContainer.find('footer').each(function () {
+            var articleContent = $(this).html();
+            var articleClass = $(this).attr('class');
+            $(this).replaceWith('<div class="' + articleClass + '">' + articleContent + '</div>');
+        });
+        tempContainer.find('.entry-content').html([[${theme.config.link.iemo_link_review_tip}]]);
+        // 删除header标签
+        tempContainer.find('header').remove()
+        if (tempContainer.find('.page-footer').length <= 0) {
+            var newElement = `
+            <div class="page-footer">
+                <nav class="pagination">
+                    <a class="next" href="/blog-requests">« 返回列表</a>
+                </nav>
+            </div>
+            `;
+            tempContainer.find('main').append(newElement);
+        }
+        // 在容器中查找 'main' 元素
+        posts = tempContainer.find('main');
+    }
+
+    const preNextClicted = () => {
+
+        let linkNext = $('.pagination .next');
+        let linkPre = $('.pagination .pre');
+        let linkDetail = $('.requests-container table a');
+
+        let fetchDataRerender = function (element) {
+            let url = $(element).attr('href');
+            if (url === undefined) {
+                return
+            }
+            console.log(element)
+            console.log(url)
+            $.ajax({
+                type: 'get',
+                url: url,
+                success: function (data) {
+                    pushResultBlock(data);
+                    $('.link-box').html(posts);
+                    preNextClicted();
+                    window.history.pushState('', '', 'links');
+
+                }
+            });
+        }
+
+        // next
+        $(document).ready(() => {
+            linkNext.on('click', () => {
+                fetchDataRerender(linkNext);
+                routerNow = $(this).attr('href');
+                return false;
+            })
+            linkPre.on('click', () => {
+                fetchDataRerender(linkPre);
+                routerNow = $(this).attr('href');
+                return false;
+            })
+            linkDetail.on('click', () => {
+                fetchDataRerender(linkDetail);
+                return false;
+            })
+        });
+    }
+
+</script>
+
+<script th:if="${theme.config.basic.iemo_auto_load}">
+    // throttle
+    function throttle(fn) {
+        return function () {
+            if (fn.timer) return;
+            fn.timer = setTimeout(() => {
+                fn.call(this);
+                fn.timer = null;
+            }, 300);
+        }
+    }
+
+
+    // pc scroll ajax
+    function pc_scroll() {
+        return throttle(function () {
+            let height = $('article').height() + 50;
+            let scrollTop = $('article').scrollTop();
+            let scrollHeight = $('article')[0].scrollHeight;
+            if (scrollHeight - (height + scrollTop) <= 50) {
+                scroll_ajax();
+            }
+        })
+    }
+
+
+    // mobile scroll ajax
+    function mobile_scroll() {
+        return throttle(function () {
+            let height = $(window).height();
+            let topToBottom = $('article')[0].getBoundingClientRect().bottom;
+            if (topToBottom - height <= 100) {
+                scroll_ajax();
+            }
+        })
+    }
+
+
+    // scroll ajax
+    const scroll_ajax = () => {
+        $this = $('#pagination-post a');
+        $this.addClass('loading').html('<i class="iconfont icon-loader"></i> 加载中...');
+        var href = $this.attr("href");
+        console.log("href: " + href)
+        if (href != undefined) {
+            $.ajax({
+                url: href,
+                type: "get",
+                error: function (request) {
+                    // console.log('error');
+                },
+                success: function (data) {
+                    $this.removeClass('loading').html('<i class="iconfont icon-activity"></i> 加载更多文章');
+                    var $res = $(data).find("article .link-box ul li");
+                    $('article .link-box ul').append($res);
+                    var newhref = $(data).find("#pagination-post a").attr("href");
+                    if (newhref != undefined) {
+                        $("#pagination-post a").attr("href", newhref);
+                        $('article').off("scroll");
+                        $('article').on("scroll", pc_scroll());
+                        $(document).off("scroll");
+                        $(document).on("scroll", mobile_scroll());
+                    } else {
+                        $("#pagination-post a").removeAttr("href");
+                        $("#pagination-post a").html('<i class="iconfont icon-anchor"></i> 好像就这么多');
+                        $("#pagination-post a").parent().addClass('no-more-post');
+                        $("#pagination-post a").off("click");
+                        $('article').off("scroll");
+                        $(document).off("scroll");
+                    }
+                }
+            });
+        } else if (href == "friends") {
+            $.ajax({
+                url: href,
+                type: "get",
+                error: function (request) {
+                    // console.log('error');
+                },
+                success: function (data) {
+                    $this.removeClass('loading').html('<i class="iconfont icon-activity"></i> 加载更多文章');
+                    var $res = $(data).find("article .link-box ul li");
+                    $('article .link-box ul').append($res);
+                    var newhref = $(data).find("#pagination-post a").attr("href");
+                    if (newhref != undefined) {
+                        $("#pagination-post a").attr("href", newhref);
+                        $('article').off("scroll");
+                        $('article').on("scroll", pc_scroll());
+                        $(document).off("scroll");
+                        $(document).on("scroll", mobile_scroll());
+                    } else {
+                        $("#pagination-post a").removeAttr("href");
+                        $("#pagination-post a").html('<i class="iconfont icon-anchor"></i> 好像就这么多');
+                        $("#pagination-post a").parent().addClass('no-more-post');
+                        $("#pagination-post a").off("click");
+                        $('article').off("scroll");
+                        $(document).off("scroll");
+                    }
+                }
+            });
+        }
+        return false;
+    }
+
+    $('article').on('scroll', pc_scroll());
+    $(document).on("scroll", mobile_scroll());
+</script>
+
+<script th:unless="${theme.config.basic.iemo_auto_load}">
+    let pc_scroll = () => {
+    };
+    let mobile_scroll = () => {
+    };
+</script>
