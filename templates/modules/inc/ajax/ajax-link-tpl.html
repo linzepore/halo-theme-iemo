@@ -96,9 +96,13 @@
                         // 在容器中查找 'main' 元素
                         posts = tempContainer.find('main');
                         // 输出结果
-                        console.log(posts);
+                        // console.log(posts);
                     } else if (url.startsWith("/blog-requests")) {
                         pushResultBlock(data)
+                        if (url === "/blog-requests") {
+                            // 修改标题
+                            posts.find('.pagination .back').remove()
+                        }
                     } else {
                         // 修改标题
                         $('.link main .content article>h2').html('友人帐 <span>Friends.</span>');
@@ -172,7 +176,7 @@
                 $this = $(this);
                 $this.addClass('loading').html('<i class="iconfont icon-loader"></i> 加载中...');
                 var href = $this.attr("href");
-                console.log(href)
+                // console.log(href)
                 if (href != undefined) {
                     $.ajax({
                         url: href,
@@ -245,11 +249,11 @@
         tempContainer.find('.entry-content').html([[${theme.config.link.iemo_link_review_tip}]]);
         // 删除header标签
         tempContainer.find('header').remove()
-        if (tempContainer.find('.page-footer').length <= 0) {
+        if (tempContainer.find('.page-footer').length <= 0 ) {
             var newElement = `
             <div class="page-footer">
                 <nav class="pagination">
-                    <a class="next" href="/blog-requests">« 返回列表</a>
+                    <a class="next back" href="/blog-requests">« 返回列表</a>
                 </nav>
             </div>
             `;
@@ -270,13 +274,18 @@
             if (url === undefined) {
                 return
             }
-            console.log(element)
-            console.log(url)
+            // console.log(element)
+            // console.log(url)
             $.ajax({
                 type: 'get',
                 url: url,
                 success: function (data) {
                     pushResultBlock(data);
+                    // 返回之后要移除返回按钮
+                    if (url === "/blog-requests") {
+                        // 修改标题
+                        posts.find('.pagination .back').remove()
+                    }
                     $('.link-box').html(posts);
                     preNextClicted();
                     window.history.pushState('', '', 'links');
@@ -349,7 +358,7 @@
         $this = $('#pagination-post a');
         $this.addClass('loading').html('<i class="iconfont icon-loader"></i> 加载中...');
         var href = $this.attr("href");
-        console.log("href: " + href)
+        // console.log("href: " + href)
         if (href != undefined) {
             $.ajax({
                 url: href,

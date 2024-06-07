@@ -176,6 +176,11 @@ spec:
       label: 友人帐
       help: 需自行安装官方链接插件、困困鱼的朋友圈插件
       formSchema:
+        - $formkit: checkbox
+          name: iemo_friends_display
+          label: 展示朋友圈及申请、审核
+          value: false
+          help: 需自行安装困困鱼的朋友圈插件之后再开启
         - $formkit: singlePageSelect
           name: iemo_link_add
           label: 申请页面
