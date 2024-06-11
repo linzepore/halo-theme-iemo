@@ -969,7 +969,7 @@ main .content aside {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  z-index: 997;
+  /*z-index: 997;*/
   overflow: hidden;
 }
 
@@ -3701,6 +3701,7 @@ main .content aside .toc ul li a:active,
   font-size: 14px;
   width: 100%;
   height: 100px;
+  resize: vertical;
   caret-color: var(--content);
   color: var(--content);
   outline: 0;
