@@ -3313,6 +3313,11 @@ main .content aside .toc ul li a:active,
     height: 40px;
   }
 
+  header .logo .logo-container {
+    width: 40px;
+    height: 40px;
+  }
+
   header .menu ul li {
     margin-bottom: 20px;
   }

@@ -1,6 +1,8 @@
 <header class="">
     <div class="logo">
-        <a href="/"><img th:src="${site.logo}" alt=""></a>
+        <div class="logo-container">
+            <a href="/"><img th:src="${site.logo}" alt=""></a>
+        </div>
     </div>
     <div class="menu">
         <ul class="menu" th:with="topMenu = ${menuFinder.getPrimary()}">
